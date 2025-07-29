@@ -1,5 +1,5 @@
 <div align="center">
-    <h1>🎪ENGLISH PROJECT NAME HERE🎪</h1>
+    <h1>Ratatui Key Debug</h1>
     <img src="logo.png" width="230">
     <br/>
 
@@ -11,10 +11,9 @@
 
 ## Description
 
-UPDATE WITH ENGLISH DESCRIPTION
+A simple TUI application for displaying what keyboard inputs Ratatui is receiving, as the Windows Terminal and VSCode intercept some keyboard shortcuts before Ratatui receives them.
 
-Note: Code of conduct and Security tabs are populated from https://github.com/AAFC-Cloud/.github  
-Note: Remove these notes when using the template
+![A screenshot of the TUI application](./Screenshot%202025-07-29%20103538.png)
 
 ## Copyright
 
