@@ -1,7 +1,10 @@
-use std::time::{Duration, Instant};
+use std::{io::stdout, time::{Duration, Instant}};
 
 use ratatui::{
-    crossterm::event::{self, Event, KeyEventKind},
+    crossterm::{
+        event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
+        execute,
+    },
     symbols,
     text::Line,
     widgets::{Block, Padding, Paragraph, Widget},
@@ -9,14 +12,27 @@ use ratatui::{
 
 fn main() {
     let mut terminal = ratatui::init();
+    execute!(stdout(), EnableMouseCapture).unwrap();
 
     terminal.clear().unwrap();
     let mut key_events: Vec<(Instant, event::KeyEvent)> = Vec::new();
+    let mut visible_events: Vec<(Instant, String)> = Vec::new();
     loop {
         if event::poll(std::time::Duration::from_millis(50)).unwrap()
-            && let Event::Key(key) = event::read().unwrap()
+            && let event = event::read().unwrap()
         {
-            key_events.push((Instant::now(), key));
+            let now = Instant::now();
+            match event {
+                Event::Key(key) => {
+                    key_events.push((now, key));
+                    visible_events.push((now, format!("{key:?}")));
+                }
+                Event::Mouse(mouse) => visible_events.push((now, format!("{mouse:?}"))),
+                Event::Resize(width, height) => {
+                    visible_events.push((now, format!("Resize({width}, {height})")))
+                }
+                _ => {}
+            }
         }
 
         // if esc hit 3 times in last 1.5 seconds, exit
@@ -37,18 +53,18 @@ fn main() {
         terminal
             .draw(|f| {
                 Paragraph::new(
-                    key_events
+                    visible_events
                         .iter()
                         .rev()
                         .take(f.area().height as usize - 2)
-                        .map(|(time, key)| {
+                        .map(|(time, event)| {
                             Line::from(format!(
                                 "{:>14} ago: {:?}",
                                 humantime::format_duration(Duration::from_millis(
                                     time.elapsed().as_millis() as u64
                                 ))
                                 .to_string(),
-                                key
+                                event
                             ))
                         })
                         .collect::<Vec<_>>(),
@@ -63,5 +79,6 @@ fn main() {
             })
             .unwrap();
     }
+    execute!(stdout(), DisableMouseCapture).unwrap();
     ratatui::restore();
 }
